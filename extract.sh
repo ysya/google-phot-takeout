@@ -2,7 +2,7 @@
 
 # 腳本使用说明
 usage() {
-    echo "Usage: $0 -in <source_directory> -out <output_directory>"
+    echo "Usage: $0 -i <source_directory> -o <output_directory>"
     exit 1
 }
 
@@ -16,21 +16,32 @@ else
     exit 1
 fi
 
-# 解析命令行參數
-while getopts ":in:out:" opt; do
-    case $opt in
-    in)
-        input_directory=$OPTARG
+# 解析命令行選項
+OPTS=$(getopt i:o: "$@")
+if [ $? != 0 ]; then
+    echo "Failed parsing options." >&2
+    exit 1
+fi
+
+# 注意引用以處理空格和特殊字符
+eval set -- "$OPTS"
+
+# 提取選項和其參數
+while true; do
+    case "$1" in
+    -i)
+        input_directory="$2"
+        shift 2
         ;;
-    out)
-        output_directory=$OPTARG
+    -o)
+        output_directory="$2"
+        shift 2
         ;;
-    \?)
-        echo "Invalid option: -$OPTARG" >&2
-        usage
+    --)
+        shift
+        break
         ;;
-    :)
-        echo "Option -$OPTARG requires an argument." >&2
+    *)
         usage
         ;;
     esac
@@ -40,6 +51,9 @@ done
 if [ -z "$input_directory" ] || [ -z "$output_directory" ]; then
     usage
 fi
+
+echo "Input directory: $input_directory"
+echo "Output directory: $output_directory"
 
 # 創建輸出目錄
 mkdir -p "$output_directory"
